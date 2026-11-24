@@ -1,0 +1,19 @@
+project_id = "virtual-engineering-workshop"
+
+[functions.content-submit]
+verify_jwt = true
+
+[functions.content-review]
+verify_jwt = true
+
+[functions.enroll-program]
+verify_jwt = true
+
+[functions.admin-set-role]
+verify_jwt = true
+
+[functions.issue-certificate]
+verify_jwt = true
+
+[functions.submit-assessment]
+verify_jwt = true

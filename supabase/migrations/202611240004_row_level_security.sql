@@ -1,0 +1,48 @@
+-- Row-level security policies and table privileges.
+alter table public.profiles enable row level security;
+alter table public.programs enable row level security;
+alter table public.program_enrollments enable row level security;
+alter table public.learning_modules enable row level security;
+alter table public.learning_lessons enable row level security;
+alter table public.practical_sessions enable row level security;
+alter table public.model_assets enable row level security;
+alter table public.content_submissions enable row level security;
+alter table public.content_reviews enable row level security;
+alter table public.lesson_progress enable row level security;
+alter table public.assessment_attempts enable row level security;
+alter table public.tutor_interactions enable row level security;
+alter table public.certificates enable row level security;
+
+create policy profiles_read on public.profiles for select to authenticated using (id=auth.uid() or public.is_staff());
+create policy profiles_update_self on public.profiles for update to authenticated using(id=auth.uid()) with check(id=auth.uid());
+revoke update on public.profiles from authenticated;
+grant update(full_name,updated_at) on public.profiles to authenticated;
+create policy programs_read on public.programs for select to authenticated using(active or public.is_staff());
+create policy programs_admin_all on public.programs for all to authenticated using(public.is_admin()) with check(public.is_admin());
+create policy enrollments_read on public.program_enrollments for select to authenticated using(student_id=auth.uid() or public.is_staff());
+create policy enrollments_insert_self on public.program_enrollments for insert to authenticated with check(student_id=auth.uid() and status='active' and (select role from public.profiles where id=auth.uid())='student');
+create policy enrollments_admin_update on public.program_enrollments for update to authenticated using(public.is_admin()) with check(public.is_admin());
+create policy modules_read on public.learning_modules for select to authenticated using((status='published' and public.student_enrolled_in(program_id)) or public.is_staff());
+create policy modules_staff_write on public.learning_modules for all to authenticated using(public.is_staff() and (public.is_admin() or author_id=auth.uid())) with check(public.is_staff() and (public.is_admin() or author_id=auth.uid()));
+create policy lessons_read on public.learning_lessons for select to authenticated using(exists(select 1 from public.learning_modules m where m.id=module_id and ((m.status='published' and public.student_enrolled_in(m.program_id)) or public.is_staff())));
+create policy lessons_staff_write on public.learning_lessons for all to authenticated using(public.is_staff() and exists(select 1 from public.learning_modules m where m.id=module_id and (public.is_admin() or m.author_id=auth.uid()))) with check(public.is_staff() and exists(select 1 from public.learning_modules m where m.id=module_id and (public.is_admin() or m.author_id=auth.uid())));
+create policy sessions_read on public.practical_sessions for select to authenticated using((status='published' and public.student_enrolled_in(program_id)) or public.is_staff());
+create policy sessions_staff_write on public.practical_sessions for all to authenticated using(public.is_staff() and (public.is_admin() or author_id=auth.uid())) with check(public.is_staff() and (public.is_admin() or author_id=auth.uid()));
+create policy model_assets_read on public.model_assets for select to authenticated using((status='published' and public.student_enrolled_in(program_id)) or public.is_staff());
+create policy model_assets_staff_write on public.model_assets for all to authenticated using(public.is_staff() and (public.is_admin() or author_id=auth.uid())) with check(public.is_staff() and (public.is_admin() or author_id=auth.uid()));
+create policy submissions_read on public.content_submissions for select to authenticated using(author_id=auth.uid() or public.is_staff());
+create policy submissions_staff_insert on public.content_submissions for insert to authenticated with check(public.is_staff() and author_id=auth.uid());
+create policy submissions_admin_update on public.content_submissions for update to authenticated using(public.is_admin()) with check(public.is_admin());
+create policy reviews_admin_read on public.content_reviews for select to authenticated using(public.is_admin() or reviewer_id=auth.uid());
+create policy reviews_admin_insert on public.content_reviews for insert to authenticated with check(public.is_admin() and reviewer_id=auth.uid());
+create policy progress_read on public.lesson_progress for select to authenticated using(student_id=auth.uid() or public.is_staff());
+create policy progress_self_write on public.lesson_progress for insert to authenticated with check(student_id=auth.uid() and exists(select 1 from public.learning_lessons l join public.learning_modules m on m.id=l.module_id where l.id=lesson_id and m.status='published' and public.student_enrolled_in(m.program_id)));
+create policy attempts_read on public.assessment_attempts for select to authenticated using(student_id=auth.uid() or public.is_staff());
+create policy interactions_read on public.tutor_interactions for select to authenticated using(student_id=auth.uid() or tutor_id=auth.uid() or public.is_admin());
+create policy interactions_student_insert on public.tutor_interactions for insert to authenticated with check(student_id=auth.uid());
+create policy interactions_tutor_update on public.tutor_interactions for update to authenticated using(public.is_staff()) with check(public.is_staff());
+create policy certificates_read on public.certificates for select to authenticated using(student_id=auth.uid() or public.is_staff());
+
+grant select,insert,update,delete on public.profiles,public.programs,public.program_enrollments,public.learning_modules,public.learning_lessons,public.practical_sessions,public.model_assets,public.content_submissions,public.content_reviews,public.lesson_progress,public.assessment_attempts,public.tutor_interactions,public.certificates to authenticated;
+grant usage,select on all sequences in schema public to authenticated;
+revoke insert,update,delete on public.assessment_attempts from authenticated;
