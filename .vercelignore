@@ -1,0 +1,5 @@
+# This repository deploys its Vite SPA. Keep the unused Next.js scaffold out
+# of the Vercel deployment so its middleware is not treated as a runtime.
+app/
+utils/supabase/
+middleware.ts

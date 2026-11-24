@@ -11,6 +11,14 @@ npm run dev
 
 Create a production build with `npm run build`, then preview it with `npm run preview`.
 
+## Deploy from GitHub to Vercel
+
+Import this repository in Vercel and leave the project root at the repository root. `vercel.json` selects the Vite framework, runs `npm run build`, publishes `dist`, and rewrites client-side routes to `index.html` so paths such as `/login` and `/signup` work on refresh. Vercel creates deployments from pushes to the connected Git branch and preview deployments for pull requests.
+
+For live Supabase authentication, add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) under the Vercel project's Environment Variables for the environments you use. These are public client keys; never add a Supabase service-role key to this frontend. `.env.local` is ignored by Git and is not uploaded to Vercel. Set the Supabase Auth site's URL and redirect URLs to your Vercel production domain and any preview domains you intend to use.
+
+This repository's deployable app is Vite. The `app/`, `utils/supabase/`, and root `middleware.ts` files are an unused Next.js scaffold and are excluded by `.vercelignore`; they are not part of this deployment or authentication runtime.
+
 ## Demo scope
 
 The current release demonstrates four rule-based practicals: engine cooling, a 24 V control circuit, a loaded truss and a pneumatic actuator. Each has selectable prototype components, a toolbox, tool compatibility checks, diagnostic feedback, simulated repair, event history, a procedure score and a downloadable text report. Models are purpose-built Three.js prototypes, not production engineering assets. Readings are illustrative scenario data and are not suitable for real engineering decisions.
