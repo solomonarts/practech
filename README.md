@@ -1,4 +1,4 @@
-# Virtual Engineering Workshop
+# Practech — Engineering Workshop
 
 A browser-first engineering practical demo built with React, TypeScript, Vite, Three.js and React Three Fiber. VR equipment is not required. The 3D workshop loads only when opened, and the session is saved in local browser storage.
 
